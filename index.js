@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: true })) // express'imizin form verilerin
 const connection = sql.createConnection({
     host: "localhost",
     user: "root",
-    password: "isbelvalex123",
+    password: "",
     database: "myDatabase",
 })
 connection.connect((err) => {
