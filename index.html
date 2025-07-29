@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <form id="myForm">
+        <input type="text" name="name" id="name" placeholder="Kullanıcı Adı: " />
+        <input type="email" name="email" id="email" placeholder="Email: " />
+        <input type="hidden" name="userId" id="userId">
+        <button id="submitButton" type="submit">Gönder</button>
+    </form>
+    <form id="updateForm">
+        <input type="text" name="name" id="name2" placeholder="Kullanıcı Adı: " />
+        <input type="email" name="email" id="email2" placeholder="Email: " />
+        <input type="hidden" name="userId" id="userId">
+        <button id="submitButton2" type="submit">Gönder</button>
+    </form>
+    <div style="justify-content:center; align-items: center; width: 30%; height: 200px;">
+        <ul id="list">
+
+        </ul>
+    </div>
+
+
+    <script>
+        document.getElementById("myForm").addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById("name").value
+            const email = document.getElementById("email").value
+            const response = await fetch('http://localhost:3000/submit-form',
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+
+                    },
+                    body: JSON.stringify({
+                        email,
+                        name,
+                    })
+                }
+            )
+            const data = await response.text();
+            alert(data)
+            getData()
+        })
+        const getData = async () => {
+            const list = document.getElementById("list")
+            list.innerHTML = null;
+            await fetch("http://localhost:3000/form-data").then(res => res.json())
+                .then(data => {
+                    data.forEach(item => {
+                        const listElement = document.createElement("li")
+                        const button = document.createElement("button")
+                        const editButton = document.createElement("button")
+                        button.textContent = "Veritabanından Sil"
+                        editButton.textContent = "Öğeyi Düzenle"
+                        button.onclick = () => deleteData(item.id)
+                        editButton.onclick = () => updateData(item)
+                        listElement.textContent = `İsim: ${item.name} E-Mail: ${item.email}`
+                        listElement.appendChild(button)
+                        listElement.appendChild(editButton)
+                        list.appendChild(listElement)
+                    })
+                })
+        }
+        const deleteData = async (id) => {
+            if (!confirm("Bu veriyi silmek istediğinize emin misiniz?")) return;
+            await fetch(`http://localhost:3000/delete/${id}`, {
+                method: "DELETE"
+            }).then(() => getData())
+        }
+        const updateData = async (item) => {
+            console.log(item)
+            const name = document.getElementById("name2")
+            const email = document.getElementById("email2")
+            const submitButton = document.getElementById("submitButton2")
+            const userIdInput = document.getElementById("userId")
+            userIdInput.value = item.id
+            name.value = item.name
+            email.value = item.email
+            submitButton2.textContent = "Kaydet"
+        }
+        document.getElementById("updateForm").addEventListener("submit", (e) => {
+            e.preventDefault()
+            const email = document.getElementById("email2").value
+            const name = document.getElementById("name2").value
+            const userId = document.getElementById("userId").value
+            fetch(`http://localhost:3000/form-update/${userId}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    name, email
+                })
+            })
+                .then(res => res.text())
+                .then(msg => { alert(msg) })
+                .then(() => getData())
+        })
+        getData()
+    </script>
+</body>
+
+</html>
